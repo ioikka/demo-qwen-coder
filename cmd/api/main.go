@@ -7,12 +7,32 @@ import (
 	"time"
 
 	"currency-api/internal/handler"
+	"currency-api/internal/repository"
 	"currency-api/internal/service"
 )
 
 func main() {
-	// Initialize service with in-memory cache
-	currencyService := service.NewCurrencyService()
+	// Get data directory from environment or use default
+	dataDir := os.Getenv("DATA_DIR")
+	if dataDir == "" {
+		dataDir = "./data"
+	}
+
+	// Initialize repository with data persistence
+	currencyRepo, err := repository.NewCurrencyRepository(dataDir)
+	if err != nil {
+		log.Fatalf("Failed to create currency repository: %v", err)
+	}
+
+	// Load data from cache or remote source
+	log.Println("Loading currency data...")
+	if err := currencyRepo.LoadData(); err != nil {
+		log.Fatalf("Failed to load currency data: %v", err)
+	}
+	log.Printf("Loaded %d currencies", currencyRepo.GetCurrencyCount())
+
+	// Initialize service with repository
+	currencyService := service.NewCurrencyService(currencyRepo)
 	
 	// Initialize handler
 	currencyHandler := handler.NewCurrencyHandler(currencyService)

@@ -5,16 +5,24 @@ import (
 	"net/http"
 	"sort"
 
-	"currency-api/internal/service"
+	"currency-api/internal/model"
 )
+
+// CurrencyService defines the interface for currency operations
+type CurrencyService interface {
+	GetCurrency(code string) (model.Currency, bool)
+	GetAllCurrencies() []model.Currency
+	GetCurrencyCount() int
+	RefreshData() error
+}
 
 // CurrencyHandler handles HTTP requests for currency data
 type CurrencyHandler struct {
-	service *service.CurrencyService
+	service CurrencyService
 }
 
 // NewCurrencyHandler creates a new currency handler
-func NewCurrencyHandler(service *service.CurrencyService) *CurrencyHandler {
+func NewCurrencyHandler(service CurrencyService) *CurrencyHandler {
 	return &CurrencyHandler{
 		service: service,
 	}
